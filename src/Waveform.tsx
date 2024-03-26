@@ -13,7 +13,6 @@ const Waveform = ({ audio }) => {
   const waveSurferRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
-  const containerWidth = 800; // Adjust this value to set the fixed width for the container
 
   useEffect(() => {
     const waveSurfer = WaveSurfer.create({
@@ -24,22 +23,35 @@ const Waveform = ({ audio }) => {
       barWidth: 2,
       barHeight: 1,
       height: 50,
-      width: containerWidth,
+      responsive: true,
     });
     waveSurfer.load(audio);
 
     waveSurfer.on("ready", () => {
       waveSurferRef.current = waveSurfer;
-      const duration = waveSurferRef.current.getDuration();
-      const zoomFactor = containerWidth / duration;
-      setZoomLevel(zoomFactor);
-      waveSurferRef.current.zoom(zoomFactor);
+      updateZoom();
     });
+
+    const handleResize = () => {
+      updateZoom();
+    };
+
+    window.addEventListener("resize", handleResize);
 
     return () => {
       waveSurfer.destroy();
+      window.removeEventListener("resize", handleResize);
     };
-  }, [audio, containerWidth]);
+  }, [audio]);
+
+  const updateZoom = () => {
+    if (!waveSurferRef.current) return;
+    const duration = waveSurferRef.current.getDuration();
+    const containerWidth = containerRef.current.offsetWidth;
+    const zoomFactor = containerWidth / duration;
+    setZoomLevel(zoomFactor);
+    waveSurferRef.current.zoom(zoomFactor);
+  };
 
   const handlePlay = () => {
     waveSurferRef?.current.playPause();
@@ -47,13 +59,15 @@ const Waveform = ({ audio }) => {
   };
 
   const handleZoomIn = () => {
-    setZoomLevel((prevZoom) => prevZoom * 2);
-    waveSurferRef.current.zoom(zoomLevel * 2);
+    const newZoomLevel = zoomLevel * 2;
+    setZoomLevel(newZoomLevel);
+    waveSurferRef.current.zoom(newZoomLevel);
   };
 
   const handleZoomOut = () => {
-    setZoomLevel((prevZoom) => prevZoom / 2);
-    waveSurferRef.current.zoom(zoomLevel / 2);
+    const newZoomLevel = zoomLevel / 2;
+    setZoomLevel(newZoomLevel);
+    waveSurferRef.current.zoom(newZoomLevel);
   };
 
   return (
@@ -79,8 +93,8 @@ const Waveform = ({ audio }) => {
       >
         <FaSearchMinus size="1.5em" />
       </button>
-      <div style={{ width: containerWidth, paddingRight: "20px" }}>
-        <div id="waveform" ref={containerRef} />
+      <div style={{ width: "100%", paddingRight: "20px" }}>
+        <div id="waveform" ref={containerRef} style={{ width: "100%" }} />
       </div>
     </div>
   );
