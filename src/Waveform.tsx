@@ -47,7 +47,7 @@ const Waveform = ({ audio }) => {
   const updateZoom = () => {
     if (!waveSurferRef.current) return;
     const duration = waveSurferRef.current.getDuration();
-    const containerWidth = containerRef.current.offsetWidth;
+    const containerWidth = containerRef.current.offsetWidth - 200; // Adjusted for right margin
     const zoomFactor = containerWidth / duration;
     setZoomLevel(zoomFactor);
     waveSurferRef.current.zoom(zoomFactor);
@@ -93,7 +93,7 @@ const Waveform = ({ audio }) => {
       >
         <FaSearchMinus size="1.5em" />
       </button>
-      <div style={{ width: "100%", paddingRight: "20px" }}>
+      <div style={{ width: "calc(100% - 200px)", paddingRight: "20px" }}>
         <div id="waveform" ref={containerRef} style={{ width: "100%" }} />
       </div>
     </div>
